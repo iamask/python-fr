@@ -142,14 +142,6 @@ python main.py
 ```
 
 
-```
-cd face-attendance-system
-chmod +x setup_env.sh
-./setup_env.sh        # Takes 5-10 minutes
-source venv/bin/activate
-python main.py
-```
-
 ### First Time Setup
 
 1. **Grant Camera Permissions**: When prompted, allow the application to access your camera in System Preferences → Security & Privacy → Camera
