@@ -334,16 +334,36 @@ with open('encodings.pkl', 'rb') as f:
 python3 -c "import cv2; cap = cv2.VideoCapture(0); print('Camera 0:', cap.isOpened()); cap.release()"
 ```
 
-### Issue: "Please install face_recognition_models"
+### Issue: "Please install face_recognition_models" (even after installing it)
 
-**Solution:**
+**Root Cause:** On **Python 3.13+**, `setuptools` version 81+ removed `pkg_resources`, which `face_recognition_models` depends on. The package installs but fails to import silently, so `face_recognition` thinks it's missing.
+
+**Solution (the real fix):**
 ```bash
-# Install the missing models package
+source venv/bin/activate
+
+# 1. Downgrade setuptools (restores pkg_resources)
+pip install "setuptools<81"
+
+# 2. Install the models package
 pip install git+https://github.com/ageitgey/face_recognition_models
 
-# Or if you get permission errors
-pip install git+https://github.com/ageitgey/face_recognition_models --user
+# 3. Verify it works
+python -c "import face_recognition; print('OK')"
 ```
+
+**Alternative Simpler Options:**
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **Use Python 3.11 or 3.12** | No setuptools issue | Requires reinstalling Python |
+| **Pin `setuptools<81`** (our fix) | Works on 3.13 | Older setuptools |
+| **Use `deepface` library** | Pure pip install, no dlib | Different API, needs code rewrite |
+| **Use `insightface`** | Modern, accurate | Heavier dependencies |
+
+**Is `pip install git+https://...face_recognition_models` required?**
+
+Yes — `face_recognition` depends on `face_recognition_models` (it's not bundled on PyPI due to file size). It must be installed from GitHub. The only way to avoid it is to switch to a different library like `deepface` or `insightface`.
 
 ### Issue: "dlib installation fails"
 

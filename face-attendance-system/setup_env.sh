@@ -52,6 +52,10 @@ echo "   (This may take 5-10 minutes due to dlib compilation)"
 # Upgrade pip
 pip install --upgrade pip -q
 
+# Install compatible setuptools (Python 3.13 fix - pkg_resources removed in setuptools 81+)
+echo "   Installing setuptools<81 (required for face_recognition_models on Python 3.13)..."
+pip install "setuptools<81" -q
+
 # Install packages in order (important for macOS)
 echo "   Installing numpy..."
 pip install numpy -q
@@ -62,11 +66,11 @@ pip install cmake -q
 echo "   Installing dlib (this takes a while)..."
 pip install dlib 2>&1 | grep -E "(Successfully|error|ERROR)" || echo "      Still compiling..."
 
-echo "   Installing face-recognition..."
-pip install face-recognition -q
-
 echo "   Installing face-recognition-models..."
 pip install git+https://github.com/ageitgey/face_recognition_models -q
+
+echo "   Installing face-recognition..."
+pip install face-recognition -q
 
 echo "   Installing opencv-python..."
 pip install opencv-python -q
