@@ -144,16 +144,32 @@ python main.py
 
 ### First Time Setup
 
-1. **Grant Camera Permissions**: When prompted, allow the application to access your camera in System Preferences → Security & Privacy → Camera
+#### ⚠️ macOS Camera Permissions (CRITICAL - Do This First!)
 
-2. **Register Employees**: 
+**This is the #1 cause of crashes on macOS.** You MUST grant camera permissions BEFORE running the full app:
+
+```bash
+# Run this command FIRST to trigger the permission dialog
+# (This is a simple test that won't crash)
+python -c "import cv2; cap = cv2.VideoCapture(0); print('✅ Camera OK' if cap.isOpened() else '❌ Failed'); cap.release()"
+```
+
+When prompted, click **"Allow"**. Then:
+1. Go to **System Settings** → **Privacy & Security** → **Camera**
+2. Ensure **Terminal** (or your IDE) has a ✅ checkmark
+3. **Fully quit and restart** your terminal/IDE
+4. Now run `python main.py`
+
+**Why?** On macOS, OpenCV triggers a permission dialog. If the GUI initializes simultaneously, it causes a fatal Python threading error (GIL crash). Pre-granting permission prevents this.
+
+#### 2. **Register Employees**:
    - Switch to the **"Registration"** tab
    - Enter employee name
    - Position face in preview window
    - Click **"Capture Face"**
    - Repeat for all employees
 
-3. **Start Attendance**:
+#### 3. **Start Attendance**:
    - Switch to **"Dashboard"** tab
    - Click **"Start Scanning"**
    - System will automatically detect and mark attendance
@@ -321,24 +337,32 @@ with open('encodings.pkl', 'rb') as f:
 
 ## 🔍 Troubleshooting
 
-### Step 3: Grant Camera Permissions (macOS Critical!)
+### Issue: "Fatal Python error: PyEval_RestoreThread" / "the GIL is released"
 
-**⚠️ THIS STEP IS MANDATORY ON macOS**
-
-Before running the app for the first time:
-
-```bash
-# Quick permission check (run this first to trigger the dialog)
-python -c "import cv2; cap = cv2.VideoCapture(0); print('OK' if cap.isOpened() else 'FAIL'); cap.release()"
+**Error looks like:**
+```
+Fatal Python error: PyEval_RestoreThread: the function must be called with the GIL held...
+Python runtime state: initialized
+[1] 71883 abort  python main.py
 ```
 
-**Manual permission grant:**
-1. Go to **System Settings** → **Privacy & Security** → **Camera**
-2. Enable camera access for **Terminal** (or your IDE: VS Code, PyCharm, etc.)
-3. **Restart** the terminal/IDE completely
-4. Run the application
+**Root Cause:** macOS camera permission dialog conflict with Python's GIL (Global Interpreter Lock). OpenCV tries to show the permission dialog while CustomTkinter is initializing, causing a threading crash.
 
-**Why this matters:** On macOS, OpenCV triggers a permission dialog the first time. If the app is initializing GUI components simultaneously, it causes a fatal Python threading error (GIL issue). Granting permission first prevents this crash.
+**Solution:**
+```bash
+# Step 1: Pre-grant camera permission (run this simple test first)
+python -c "import cv2; cap = cv2.VideoCapture(0); print('OK' if cap.isOpened() else 'FAIL'); cap.release()"
+# Click "Allow" when macOS prompts
+
+# Step 2: Verify permission in System Settings
+# System Settings > Privacy & Security > Camera > ✅ Terminal (or IDE)
+
+# Step 3: Restart terminal/IDE completely
+# Then run:
+python main.py
+```
+
+**Prevention:** Always run the permission test command before first launch.
 
 ### Issue: "No camera found"
 

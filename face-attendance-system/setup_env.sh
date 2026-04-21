@@ -97,6 +97,21 @@ echo "=============================================="
 echo "  ✅ Setup Complete!"
 echo "=============================================="
 echo ""
+
+# macOS-specific warning
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "⚠️  IMPORTANT macOS STEP (Do this FIRST before running main.py):"
+    echo ""
+    echo "   Run this command to grant camera permissions:"
+    echo "   python -c \"import cv2; cap = cv2.VideoCapture(0); print('OK' if cap.isOpened() else 'FAIL'); cap.release()\""
+    echo ""
+    echo "   When prompted, click 'Allow', then restart your terminal."
+    echo "   Without this step, the app will CRASH with a 'GIL' error!"
+    echo ""
+    echo "See README.md section 'First Time Setup' for details."
+    echo ""
+fi
+
 echo "To run the application:"
 echo "   source venv/bin/activate"
 echo "   python main.py"
