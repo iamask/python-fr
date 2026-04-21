@@ -65,6 +65,9 @@ pip install dlib 2>&1 | grep -E "(Successfully|error|ERROR)" || echo "      Stil
 echo "   Installing face-recognition..."
 pip install face-recognition -q
 
+echo "   Installing face-recognition-models..."
+pip install git+https://github.com/ageitgey/face_recognition_models -q
+
 echo "   Installing opencv-python..."
 pip install opencv-python -q
 

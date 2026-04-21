@@ -334,6 +334,17 @@ with open('encodings.pkl', 'rb') as f:
 python3 -c "import cv2; cap = cv2.VideoCapture(0); print('Camera 0:', cap.isOpened()); cap.release()"
 ```
 
+### Issue: "Please install face_recognition_models"
+
+**Solution:**
+```bash
+# Install the missing models package
+pip install git+https://github.com/ageitgey/face_recognition_models
+
+# Or if you get permission errors
+pip install git+https://github.com/ageitgey/face_recognition_models --user
+```
+
 ### Issue: "dlib installation fails"
 
 **Solution:**
