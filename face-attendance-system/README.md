@@ -321,6 +321,25 @@ with open('encodings.pkl', 'rb') as f:
 
 ## 🔍 Troubleshooting
 
+### Step 3: Grant Camera Permissions (macOS Critical!)
+
+**⚠️ THIS STEP IS MANDATORY ON macOS**
+
+Before running the app for the first time:
+
+```bash
+# Quick permission check (run this first to trigger the dialog)
+python -c "import cv2; cap = cv2.VideoCapture(0); print('OK' if cap.isOpened() else 'FAIL'); cap.release()"
+```
+
+**Manual permission grant:**
+1. Go to **System Settings** → **Privacy & Security** → **Camera**
+2. Enable camera access for **Terminal** (or your IDE: VS Code, PyCharm, etc.)
+3. **Restart** the terminal/IDE completely
+4. Run the application
+
+**Why this matters:** On macOS, OpenCV triggers a permission dialog the first time. If the app is initializing GUI components simultaneously, it causes a fatal Python threading error (GIL issue). Granting permission first prevents this crash.
+
 ### Issue: "No camera found"
 
 **Solution:**

@@ -4,9 +4,14 @@ Handles webcam capture with automatic fallback between camera indices.
 Optimized for macOS where camera 0 might be unavailable.
 """
 
+import sys
+import time
 import cv2
 import tkinter as tk
 from tkinter import messagebox
+
+# Detect if running on macOS
+IS_MACOS = sys.platform == 'darwin'
 
 
 class CameraHandler:
@@ -34,14 +39,29 @@ class CameraHandler:
         """
         Attempt to connect to camera with fallback.
         
+        On macOS: Uses AVFOUNDATION backend (better permission handling)
+        On Linux/Windows: Uses default V4L2/DShow backends
+        
         Tries camera index 0 first (default camera).
         If that fails, tries index 1 (external/webcam).
         
         Raises:
             Shows error dialog if no camera is found.
         """
+        # On macOS, use AVFOUNDATION backend for better permission handling
+        # This prevents the GIL/threading crash when permission dialog appears
+        backend = cv2.CAP_AVFOUNDATION if IS_MACOS else cv2.CAP_ANY
+        
         # Try camera index 0 (default)
-        self.cap = cv2.VideoCapture(0)
+        print("📷 Attempting to connect to camera...")
+        if IS_MACOS:
+            print("   (macOS detected - using AVFOUNDATION backend)")
+            # On macOS, give system a moment to handle permission dialog
+            # without blocking Python's GIL
+            self.cap = cv2.VideoCapture(0, backend)
+            time.sleep(0.5)  # Allow permission dialog to process
+        else:
+            self.cap = cv2.VideoCapture(0, backend)
         
         if self.cap.isOpened():
             self.current_index = 0
@@ -50,7 +70,11 @@ class CameraHandler:
             return
         
         # Fallback to camera index 1
-        self.cap = cv2.VideoCapture(1)
+        if IS_MACOS:
+            self.cap = cv2.VideoCapture(1, backend)
+            time.sleep(0.5)
+        else:
+            self.cap = cv2.VideoCapture(1, backend)
         
         if self.cap.isOpened():
             self.current_index = 1
@@ -61,19 +85,25 @@ class CameraHandler:
         # No camera found
         self.is_connected = False
         error_msg = (
-            "No camera found!\n\n"
-            "Please check:\n"
+            "No camera found or permission denied!\n\n"
+            "On macOS:\n"
+            "1. Go to System Settings > Privacy & Security > Camera\n"
+            "2. Enable camera access for Terminal/IDE\n"
+            "3. Restart the application\n\n"
+            "Also check:\n"
             "• Camera is connected\n"
-            "• Camera permissions are granted in System Preferences > Security & Privacy\n"
             "• No other app is using the camera"
         )
         print(f"❌ {error_msg}")
         
-        # Show error dialog
-        root = tk.Tk()
-        root.withdraw()
-        messagebox.showerror("Camera Error", error_msg)
-        root.destroy()
+        # Show error dialog (deferred to avoid threading issues)
+        try:
+            root = tk.Tk()
+            root.withdraw()
+            messagebox.showerror("Camera Error", error_msg)
+            root.destroy()
+        except Exception as e:
+            print(f"Could not show dialog: {e}")
     
     def get_frame(self):
         """
